@@ -6,6 +6,9 @@ con la ruta y las paradas, más una línea de tiempo sincronizada.
 La especificación completa está en [docs/SPEC.md](docs/SPEC.md). Léela antes de
 tocar nada. Aquí está solo lo que hace falta para trabajar en el día a día.
 
+Las tareas futuras (fuera del plan de slices, ya completado) se anotan en
+[docs/TODO.md](docs/TODO.md).
+
 ## Al terminar cada tarea
 
 ```
