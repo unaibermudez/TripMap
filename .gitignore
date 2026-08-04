@@ -1,0 +1,24 @@
+# build
+dist/
+.astro/
+
+# deps
+node_modules/
+
+# playwright
+test-results/
+playwright-report/
+e2e/.output/
+e2e/screenshots/
+
+# entorno
+.env
+.env.production
+
+# sistema
+.DS_Store
+Thumbs.db
+*.stackdump
+
+# capturas sueltas de depuración
+debug.png
