@@ -1,0 +1,7 @@
+# El repo se escribe desde Windows y se construye en Ubuntu: los ficheros de
+# texto se guardan y se sacan siempre con finales de línea LF, para que el
+# sistema de quien clona no ensucie los diffs.
+* text=auto eol=lf
+
+*.png binary
+*.svg text eol=lf
