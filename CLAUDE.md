@@ -31,6 +31,7 @@ salvo petición expresa.**
 | `npm run test:watch` | Vitest en watch |
 | `npm run test:e2e` | Playwright: layout en escritorio y móvil. Reconstruye y sirve en el 4322; deja las capturas en `e2e/screenshots` |
 | `npm run typecheck` | `astro check` + `tsc --noEmit` |
+| `npm run photos` | Redimensiona a 1600px, convierte a webp y calcula `width`/`height`: de `photos-src/` (no versionada) a `public/photos/` |
 
 ## Decisiones cerradas
 
@@ -117,5 +118,5 @@ en `http://localhost:4321/TripMap/`. Las rutas absolutas que no pasan por Astro
 
 ## Fuera del alcance de la v1
 
-Pipeline de imágenes, página de administración, contenido real, reproducción
-automática, animaciones más allá del `flyTo`.
+Página de administración, contenido real, reproducción automática,
+animaciones más allá del `flyTo`.

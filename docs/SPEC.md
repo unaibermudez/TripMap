@@ -503,10 +503,35 @@ commits salvo petición expresa.
 
 ## 8. Fuera del alcance de la v1
 
-- Pipeline de procesado de imágenes
 - Página de administración para capturar puntos
 - Contenido real
 - Modo de reproducción automática
 - Animaciones y transiciones más allá del `flyTo`
 
-El deploy estaba aquí y salió del cajón en el SLICE 9 (§3.9).
+El deploy estaba aquí y salió del cajón en el SLICE 9 (§3.9); el pipeline de
+imágenes, en el §9.
+
+## 9. Pipeline de fotos
+
+Herramienta de autor, no parte del sitio ni del build de Astro: se ejecuta a
+mano cada vez que hay fotos nuevas que meter en el repo, con `npm run photos`.
+
+- **Un script en `scripts/process-photos.ts`**, no una integración con
+  `astro:assets`. Usar el sistema de imágenes de Astro habría exigido mover
+  las fotos a `src/` e importarlas como módulos; así se quedan en `public/`
+  igual que hoy, el esquema de `src/lib/schema.ts` no cambia, y `withBase`
+  las sigue sirviendo exactamente igual (§3.9).
+- **Lee de `photos-src/`** (fuera de `public/`, sin versionar) **y escribe en
+  `public/photos/`.** El nombre de fichero se conserva tal cual, solo cambia
+  la extensión: hay que nombrarlas ya con la convención
+  `<id-de-parada>-<descripción>` antes de procesarlas.
+- **Redimensiona al lado más largo, sin recortar ni ampliar** (`fit: 'inside'`,
+  `withoutEnlargement: true` de `sharp`), corrige la orientación EXIF con
+  `.rotate()` y convierte a webp.
+- **Solo automatiza lo mecánico:** medir y comprimir. El `width`/`height` que
+  pide el esquema se saca de la foto ya procesada y se imprime por consola
+  listo para copiar; el texto narrativo (`caption`, `date`, cuerpo de la
+  parada) lo sigue escribiendo el autor a mano, no tiene sentido generarlo.
+- **`sharp` va como dependencia explícita** aunque Astro ya lo trae de forma
+  transitiva para su propio sistema de imágenes: depender de ese hoisting
+  habría sido frágil ante un cambio de versión de Astro.

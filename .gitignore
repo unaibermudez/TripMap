@@ -22,3 +22,6 @@ Thumbs.db
 
 # capturas sueltas de depuración
 debug.png
+
+# fotos originales sin procesar; `npm run photos` las deja listas en public/photos
+photos-src/
