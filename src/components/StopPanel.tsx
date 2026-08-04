@@ -65,7 +65,6 @@ export function StopPanel() {
         className={`min-h-0 flex-1 overflow-y-auto px-4 pb-4 md:block ${isPanelOpen ? '' : 'hidden'}`}
       >
         {arrival !== null && (
-          // El `mode` del leg se muestra, pero no cambia cómo se dibuja (§2.9).
           <p className="mb-3 text-xs text-neutral-400">Llegada {travelModeLabel(arrival.mode)}</p>
         )}
 

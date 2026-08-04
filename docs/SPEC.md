@@ -111,14 +111,31 @@ ella. Las fechas aparecen como etiquetas, no como métrica de posición.
 enormes: tres meses en un sitio y dos días en el siguiente harían la mayoría de
 paradas inclicables. La timeline es un control de navegación, no un gráfico.
 
-### 2.9 El `mode` del leg no cambia el render en la v1
+### 2.9 El `mode` del leg decide cómo se dibuja el tramo
 
-Se guarda en los datos y se muestra en el panel de contenido, pero todos los
-tramos se dibujan igual.
+Revierte la decisión original de la v1 ("el `mode` no cambia el render"), a
+petición explícita del autor. No hace falta ningún campo nuevo en los datos:
+`leg.mode` ya era "cómo se llegó a esta parada"; lo que cambia es que ahora el
+mapa lo lee.
 
-**Por qué.** Diferenciar visualmente los tramos (avión en discontinuo, por
-ejemplo) es pulido visual, explícitamente fuera del alcance de la v1. El dato
-está ahí para cuando se quiera.
+Tres fuentes de geometría por leg, en este orden de prioridad (detalle técnico
+en §9):
+
+1. **Avión, tren o barco → arco de gran círculo.** Ninguno de los tres sigue
+   una carretera, así que se dibujan como una curva suave entre las dos
+   paradas en vez del spline decorativo.
+2. **Coche o bus → carretera real**, si `npm run roads` ya generó la geometría
+   para ese leg (§9). Si no la ha generado todavía, cae al punto 3.
+3. **El resto → el spline decorativo de siempre** (§2.4, §2.6), sin cambios.
+
+**Por qué el arco también en tren y barco.** Ninguno de los dos sigue una
+carretera, y el motor de rutas usado (§9) solo tiene perfil de conducción: no
+hay una alternativa mejor sin montar infraestructura propia.
+
+Sea cual sea la fuente, el primer y último punto se fuerzan siempre a la
+coordenada exacta de la parada (`snapEndpoints` en `src/lib/route.ts`): la
+garantía de §2.6 de que cada parada cae exactamente sobre la línea no depende
+de qué generó el tramo.
 
 ## 3. Arquitectura
 
@@ -509,4 +526,45 @@ commits salvo petición expresa.
 - Modo de reproducción automática
 - Animaciones y transiciones más allá del `flyTo`
 
-El deploy estaba aquí y salió del cajón en el SLICE 9 (§3.9).
+El deploy estaba aquí y salió del cajón en el SLICE 9 (§3.9); el cálculo de
+rutas reales por carretera, en el §9.
+
+## 9. Pipeline de rutas por carretera
+
+Herramienta de autor, no parte del sitio ni del build de Astro: se ejecuta a
+mano con `npm run roads` cada vez que se añaden legs por carretera nuevos.
+Resuelve la parte de "ruta real por carretera" que `docs/TODO.md` tenía
+anotada como idea de backend — no hace falta backend: basta con precalcular
+una vez y comitear el resultado.
+
+- **`scripts/generate-road-routes.ts`**, no una llamada en vivo desde el
+  sitio desplegado. Lee `stops`/`legs` de `src/data` por ruta relativa (no
+  puede usar el alias `@/`: fuera de Vite, Node no lo resuelve), pide a OSRM
+  la ruta de cada leg en coche o bus que todavía no tenga entrada, y escribe
+  el resultado en `src/data/generated/road-routes.json`, que sí se comitea
+  (igual que las fotos procesadas en `public/photos/`).
+- **OSRM público (`router.project-osrm.org`), sin registro ni clave.** El
+  repo no tiene hoy ningún mecanismo de secretos (`.env`, `secrets` en el
+  workflow de CI), y añadirlo solo para esto no compensaba. Su aviso de "no
+  usar en producción" no aplica: nunca lo llama el sitio desplegado, solo el
+  script en local. Limitación real: solo ofrece perfil de conducción, lo que
+  fija la decisión de tren/barco → arco en vez de ruta real (§2.9).
+- **Incremental.** Si el leg ya tiene entrada en el JSON, no repite la
+  llamada — importante para no agotar el límite de peticiones del servidor
+  de demo al volver a ejecutar el script tras añadir una sola parada nueva.
+- **`snapEndpoints` fuerza los extremos** a la coordenada exacta de la parada
+  antes de guardar: OSRM devuelve el punto "enganchado" a la carretera más
+  cercana, no el pedido. La misma función (misma lógica, duplicada a
+  propósito para que el script no dependa de `src/lib`) se aplica también en
+  `src/lib/route.ts` sobre el resultado ya leído, así que la garantía no
+  depende de que el JSON esté bien generado.
+- **Falla alto.** Si OSRM no encuentra ruta o la petición falla, el script
+  para con un error que nombra el leg, sin escribir una entrada a medias ni
+  caer a ningún fallback silencioso.
+- **Coste conocido.** El JSON generado se importa como módulo (no se sirve
+  como asset aparte), así que su contenido se empaqueta dentro del JS de la
+  app: con los 7 legs de prueba de Islandia ya añade unos 760&nbsp;KB y deja
+  el bundle principal por encima de 1&nbsp;MB. Aceptable con el volumen
+  actual; si con el contenido real (100+ paradas) se vuelve un problema, la
+  vía natural es mover el JSON a `public/` y pedirlo con `fetch` en cliente
+  en vez de importarlo, a costa de que `legGeometries` deje de ser síncrona.
