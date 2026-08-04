@@ -234,10 +234,12 @@ describe('chapterBounds', () => {
   });
 
   it('con los datos reales no se estira hasta el capítulo siguiente', () => {
-    const [, minY] = chapterBounds(fixture, legGeometries(fixture), 'marruecos');
-    const last = stopAt(fixture, fixture.stops.length - 1);
+    const [, , , maxY] = chapterBounds(fixture, legGeometries(fixture), 'costa-sur');
+    const firstOfNext = stopAt(fixture, 4);
 
-    expect(last.id).toBe('nuakchot');
-    expect(last.coords[1]).toBeLessThan(minY);
+    // "costa-sur" no pasa de Höfn; "circulo-norte" arranca en Egilsstaðir, más
+    // al norte que cualquier parada o tramo interior de "costa-sur".
+    expect(firstOfNext.id).toBe('egilsstadir');
+    expect(firstOfNext.coords[1]).toBeGreaterThan(maxY);
   });
 });

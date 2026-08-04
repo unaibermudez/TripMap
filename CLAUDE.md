@@ -41,11 +41,11 @@ No las cuestiones ni las cambies.
   que hace falta un servidor, para y pregunta antes de seguir.**
 - **Stack:** Astro con islas de React, TypeScript estricto, MapLibre GL JS,
   Turf.js, Zustand, Zod, Vitest, Playwright, Tailwind.
-- **Basemap sobrio en grises** (Carto Positron o equivalente sin token). Deben
-  destacar la ruta y las fotos, no el mapa. Mantener la atribución de OSM y
-  CARTO. Se puede cambiar a satélite (teselas raster de Esri, sin token) desde
-  el selector del mapa, pero **el de partida sigue siendo Positron**. El
-  catálogo está en `src/lib/basemap.ts` y el basemap activo, en el store.
+- **Dos basemaps: Positron (sobrio en grises, Carto) y satélite** (teselas
+  raster de Esri, sin token), elegibles desde el selector del mapa. **El de
+  partida es el satélite.** Mantener la atribución de OSM/CARTO cuando el
+  activo sea Positron, y la de Esri cuando sea el satélite. El catálogo está en
+  `src/lib/basemap.ts` y el basemap activo, en el store.
 - **La ruta no se dibuja a mano.** Se genera de la secuencia de coordenadas de
   las paradas y se suaviza con `turf.bezierSpline`. El array `via` de cada leg
   existe solo para corregir tramos donde la curva quede mal (cruza el mar,

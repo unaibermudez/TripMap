@@ -16,13 +16,13 @@ async function openTrip(page: Page): Promise<void> {
   // base del sitio (§3.9).
   await page.goto('./');
 
-  // La atribución la trae el style de Positron (§3.4): si está, el style se ha
-  // descargado y parseado, y las capas ya se han añadido. Va contra un CDN, así
-  // que tarda bastante más que el resto de la página.
-  await expect(page.getByRole('link', { name: /OpenStreetMap/i })).toBeVisible({
+  // La atribución la trae el style del satélite, que es el de partida (§2.3):
+  // si está, el style se ha descargado y parseado, y las capas ya se han
+  // añadido. Va contra un CDN, así que tarda bastante más que el resto de la
+  // página.
+  await expect(page.getByRole('link', { name: /Esri/i }).first()).toBeVisible({
     timeout: 30_000,
   });
-  await expect(page.getByRole('link', { name: /CARTO/i })).toBeVisible();
   await page.waitForLoadState('networkidle');
 }
 
@@ -68,8 +68,8 @@ async function expectNothingOverflows(page: Page): Promise<void> {
     mapa: page.locator('canvas.maplibregl-canvas'),
     panel: page.getByRole('complementary', { name: 'Detalle de la parada' }),
     timeline: page.getByRole('region', { name: 'Línea de tiempo del viaje' }),
-    // Tiene que seguir viéndose entera: es la condición de uso de Positron
-    // (§2.3) y la razón de que el panel no flote sobre el mapa (§3.6).
+    // Tiene que seguir viéndose entera: es la condición de uso del basemap
+    // activo (§2.3) y la razón de que el panel no flote sobre el mapa (§3.6).
     atribucion: page.locator('.maplibregl-ctrl-attrib-inner'),
   };
 
@@ -108,15 +108,15 @@ test.describe('layout del viaje', () => {
     const slider = timeline.getByRole('slider', { name: 'Parada actual' });
 
     // El capítulo activo expande sus paradas con nombre y fecha (§3.5).
-    await expect(timeline.getByText('Tánger')).toBeVisible();
-    await expect(timeline.getByText('Merzouga')).toBeVisible();
+    await expect(timeline.getByText('Reikiavik')).toBeVisible();
+    await expect(timeline.getByText('Höfn')).toBeVisible();
     await expect(slider).toHaveAttribute('aria-valuenow', '0');
 
     // Cruzar al segundo capítulo: se expande solo, sin estado aparte (§3.5).
     await page.getByRole('button', { name: 'Siguiente →' }).click({ clickCount: 4 });
     await expect(slider).toHaveAttribute('aria-valuenow', '4');
-    await expect(page).toHaveURL(/\?stop=dajla$/);
-    await expect(timeline.getByText('Nuakchot')).toBeVisible();
+    await expect(page).toHaveURL(/\?stop=egilsstadir$/);
+    await expect(timeline.getByText('Borgarnes')).toBeVisible();
 
     await page.waitForTimeout(FLY_SETTLE_MS);
     await expectNothingOverflows(page);
@@ -129,7 +129,9 @@ test.describe('layout del viaje', () => {
 });
 
 test.describe('tipo de mapa', () => {
-  test('cambia a satélite y vuelve, sin perder las capas del viaje', async ({ page }, testInfo) => {
+  test('empieza en satélite, cambia a Positron y vuelve, sin perder las capas del viaje', async ({
+    page,
+  }, testInfo) => {
     // Volver a poner sources y capas sobre el style nuevo es lo que puede
     // fallar aquí (§3.8), y falla como excepción al filtrar una capa que ya no
     // existe.
@@ -139,37 +141,43 @@ test.describe('tipo de mapa', () => {
     await openTrip(page);
     const selector = page.getByRole('group', { name: 'Tipo de mapa' });
 
-    await selector.getByRole('button', { name: 'Satélite' }).click();
-
-    // La atribución de Esri es la señal de que el style de satélite ha cargado,
-    // igual que la de CARTO lo es para Positron.
-    await expect(page.getByRole('link', { name: /Esri/i }).first()).toBeVisible({
-      timeout: 30_000,
-    });
-    await expect(page.getByRole('link', { name: /CARTO/i })).toHaveCount(0);
+    // El satélite es el basemap de partida (§2.3).
     await expect(selector.getByRole('button', { name: 'Satélite' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+
+    await selector.getByRole('button', { name: 'Mapa' }).click();
+
+    // La atribución de OSM/CARTO es la señal de que el style de Positron ha
+    // cargado, igual que la de Esri lo es para el satélite.
+    await expect(page.getByRole('link', { name: /CARTO/i })).toBeVisible({ timeout: 30_000 });
+    await expect(page.getByRole('link', { name: /OpenStreetMap/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /Esri/i })).toHaveCount(0);
+    await expect(selector.getByRole('button', { name: 'Mapa' })).toHaveAttribute(
       'aria-pressed',
       'true',
     );
     await page.waitForLoadState('networkidle');
 
-    await expectMapPainted(page, 'del satélite');
+    await expectMapPainted(page, 'de Positron');
 
     // Navegar después del cambio toca el filtro de la parada activa y la source
     // de la ruta recorrida: si no se hubieran vuelto a añadir, reventaría aquí.
     await page.getByRole('button', { name: 'Siguiente →' }).click();
-    await expect(page).toHaveURL(/\?stop=chefchaouen$/);
+    await expect(page).toHaveURL(/\?stop=vik$/);
     await page.waitForTimeout(FLY_SETTLE_MS);
 
     await expectNothingOverflows(page);
-    await shoot(page, testInfo, '05-satelite');
+    await shoot(page, testInfo, '05-positron');
 
-    await selector.getByRole('button', { name: 'Mapa' }).click();
-    await expect(page.getByRole('link', { name: /CARTO/i })).toBeVisible({ timeout: 30_000 });
-    await expect(page.getByRole('link', { name: /OpenStreetMap/i })).toBeVisible();
+    await selector.getByRole('button', { name: 'Satélite' }).click();
+    await expect(page.getByRole('link', { name: /Esri/i }).first()).toBeVisible({
+      timeout: 30_000,
+    });
 
     await page.getByRole('button', { name: 'Siguiente →' }).click();
-    await expect(page).toHaveURL(/\?stop=fez$/);
+    await expect(page).toHaveURL(/\?stop=jokulsarlon$/);
 
     expect(errores, `errores en la página: ${errores.join(' | ')}`).toEqual([]);
   });
@@ -185,13 +193,15 @@ test.describe('hoja inferior en móvil', () => {
     const cuerpo = panel.locator('#stop-panel-content');
 
     // La cabecera y los botones se ven siempre; el cuerpo empieza plegado (§3.6).
-    await expect(panel.getByRole('heading', { name: 'Desembarcar en Tánger' })).toBeVisible();
+    await expect(
+      panel.getByRole('heading', { name: 'Empieza la vuelta a la isla' }),
+    ).toBeVisible();
     await expect(panel.getByRole('button', { name: 'Siguiente →' })).toBeVisible();
     await expect(cuerpo).toBeHidden();
 
     await panel.getByRole('button', { name: 'Ver más' }).click();
     await expect(cuerpo).toBeVisible();
-    await expect(cuerpo.getByRole('img', { name: /puerto visto desde la cubierta/i })).toBeVisible();
+    await expect(cuerpo.getByRole('img', { name: /tejados de colores/i })).toBeVisible();
 
     await expectNothingOverflows(page);
     await shoot(page, testInfo, '03-hoja-abierta');

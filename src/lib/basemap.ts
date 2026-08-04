@@ -80,8 +80,8 @@ const BASEMAPS: Record<BasemapId, Basemap> = {
   },
 };
 
-/** El basemap sobrio en grises sigue siendo el de partida (§2.3). */
-export const DEFAULT_BASEMAP_ID: BasemapId = 'positron';
+/** El satélite es el basemap de partida, a petición del autor. */
+export const DEFAULT_BASEMAP_ID: BasemapId = 'satellite';
 
 /** En el orden en que los ofrece el selector. */
 export const BASEMAP_LIST: readonly Basemap[] = [BASEMAPS.positron, BASEMAPS.satellite];

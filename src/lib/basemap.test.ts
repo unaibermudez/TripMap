@@ -2,9 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { BASEMAP_LIST, basemapById, DEFAULT_BASEMAP_ID } from '@/lib/basemap';
 
 describe('catálogo de basemaps', () => {
-  it('empieza en el mapa sobrio en grises', () => {
-    expect(DEFAULT_BASEMAP_ID).toBe('positron');
+  it('empieza en el satélite', () => {
+    expect(DEFAULT_BASEMAP_ID).toBe('satellite');
+  });
+
+  it('el satélite está en el catálogo aunque no vaya primero en el selector', () => {
     expect(BASEMAP_LIST[0]?.id).toBe('positron');
+    expect(BASEMAP_LIST.some((basemap) => basemap.id === DEFAULT_BASEMAP_ID)).toBe(true);
   });
 
   it('ofrece el mapa y el satélite, cada uno con su etiqueta', () => {

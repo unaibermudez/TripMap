@@ -185,9 +185,9 @@ describe('setBasemap', () => {
   it('empieza en el basemap por defecto y cambia al pedirlo', () => {
     const store = makeStore();
 
-    expect(store.getState().basemapId).toBe('positron');
-    store.getState().setBasemap('satellite');
     expect(store.getState().basemapId).toBe('satellite');
+    store.getState().setBasemap('positron');
+    expect(store.getState().basemapId).toBe('positron');
   });
 
   it('no avisa a los suscriptores si es el basemap que ya está puesto', () => {
@@ -195,10 +195,10 @@ describe('setBasemap', () => {
     const listener = vi.fn();
     store.subscribe(listener);
 
-    store.getState().setBasemap('positron');
+    store.getState().setBasemap('satellite');
     expect(listener).not.toHaveBeenCalled();
 
-    store.getState().setBasemap('satellite');
+    store.getState().setBasemap('positron');
     expect(listener).toHaveBeenCalledTimes(1);
   });
 
@@ -206,7 +206,7 @@ describe('setBasemap', () => {
     const store = makeStore();
 
     store.getState().goToStop(2);
-    store.getState().setBasemap('satellite');
+    store.getState().setBasemap('positron');
     expect(indexOf(store)).toBe(2);
   });
 });

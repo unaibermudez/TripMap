@@ -46,12 +46,13 @@ falta un servidor, hay que parar y preguntar antes de seguir.**
 
 ### 2.3 Basemap
 
-Estilo sobrio en tonos grises (Carto Positron o equivalente sin token). La ruta
-y las fotos son lo que debe destacar, no el mapa. Carto Positron sirve su style
-JSON sin token, pero **exige mantener la atribución de OpenStreetMap y CARTO**.
+Dos basemaps: Positron, estilo sobrio en tonos grises (Carto, o equivalente sin
+token), y una vista de satélite (§3.8). Carto Positron sirve su style JSON sin
+token, pero **exige mantener la atribución de OpenStreetMap y CARTO** mientras
+esté activo; el satélite exige la atribución de Esri.
 
-Positron sigue siendo el basemap de partida; la vista de satélite se añade como
-alternativa que elige quien mira, no como sustituto (§3.8).
+**El basemap de partida es el satélite.** Positron sigue disponible como
+alternativa desde el selector.
 
 ### 2.4 Ruta
 

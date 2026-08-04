@@ -112,6 +112,7 @@ export function Timeline() {
               stops={trip.stops}
               currentStopIndex={currentStopIndex}
               activeChapter={currentChapter}
+              chapters={trip.chapters}
             />
 
             <div
@@ -123,7 +124,7 @@ export function Timeline() {
               {/* Concéntrico con la marca de la parada activa y algo mayor, de
                   modo que la tape en vez de duplicarla justo encima. */}
               <span
-                className="absolute top-1 left-1/2 size-4.5 -translate-x-1/2 rounded-full border-2 border-white shadow"
+                className="absolute top-1/2 left-1/2 size-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow"
                 style={{ backgroundColor: currentChapter.color }}
               />
             </div>
