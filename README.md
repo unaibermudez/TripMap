@@ -1,13 +1,14 @@
 # TripMap
 
-Sitio estático que narra un viaje de varios años por África: un mapa
-interactivo con la ruta y las paradas, y una línea de tiempo sincronizada con
-él. Todo el contenido vive en el repositorio y se resuelve en tiempo de build;
-no hay backend, ni base de datos, ni usuarios.
+Sitio estático para visualizar viajes: un mapa interactivo con la ruta y las
+paradas, y una línea de tiempo sincronizada con él. Sirve para cualquier viaje
+que se pueda contar como una secuencia de paradas, desde una vuelta a un país
+hasta un recorrido de varios años. Todo el contenido vive en el repositorio y
+se resuelve en tiempo de build; no hay backend, ni base de datos, ni usuarios.
 
 🌍 **https://unaibermudez.github.io/TripMap/**
 
-![El mapa con la ruta por Marruecos, el panel de la parada y la línea de tiempo](docs/captura.png)
+![El mapa sobre satélite con la ruta siguiendo la carretera de circunvalación de Islandia, el panel de la parada y la línea de tiempo](docs/captura.png)
 
 ## Qué hace
 
