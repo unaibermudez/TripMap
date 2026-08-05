@@ -2,8 +2,22 @@ import type { Feature, LineString, Position } from 'geojson';
 import { describe, expect, it } from 'vitest';
 import { trip as fixture } from '@/data';
 import { loadTrip } from '@/lib/loader';
-import { chapterBounds, legGeometries, partialRouteLine, routeLine } from '@/lib/route';
+import { chapterBounds, legGeometries, partialRouteLine, routeLine, type RoadRouteTable } from '@/lib/route';
 import type { Coords, Trip } from '@/lib/schema';
+
+/** Dos paradas y un único leg, para aislar el comportamiento por `mode`. */
+function makeSingleLegTrip(mode: 'plane' | 'train' | 'boat' | 'car'): Trip {
+  return loadTrip({
+    chapters: [
+      { id: 'unico', title: 'Único', dateStart: '2023-01-01', dateEnd: '2023-01-31', color: '#c2410c' },
+    ],
+    stops: [
+      { id: 'a', name: 'A', country: 'MA', coords: [0, 0], dateStart: '2023-01-01', chapterId: 'unico', title: 'A', body: '' },
+      { id: 'b', name: 'B', country: 'MA', coords: [10, 0], dateStart: '2023-01-10', chapterId: 'unico', title: 'B', body: '' },
+    ],
+    legs: [{ fromStopId: 'a', toStopId: 'b', mode }],
+  });
+}
 
 /**
  * Cuatro paradas en dos capítulos, con coordenadas redondas para poder razonar
@@ -104,6 +118,107 @@ describe('legGeometries', () => {
     });
 
     expect(Math.min(...distances)).toBeLessThan(0.01);
+  });
+});
+
+describe('legGeometries — arco para avión, tren y barco (§2.9)', () => {
+  it.each(['plane', 'train', 'boat'] as const)(
+    'el leg en %s empieza y acaba exacto en las paradas, con un arco de más de dos puntos',
+    (mode) => {
+      const [coordinates] = legGeometries(makeSingleLegTrip(mode));
+      if (coordinates === undefined) throw new Error('Se esperaba geometría para el leg.');
+
+      expect(coordinates.at(0)).toEqual([0, 0]);
+      expect(coordinates.at(-1)).toEqual([10, 0]);
+      expect(coordinates.length).toBeGreaterThan(2);
+    },
+  );
+
+  it('un leg por carretera no lleva arco: sigue siendo el spline decorativo de siempre', () => {
+    const [coordinates] = legGeometries(makeSingleLegTrip('car'));
+    if (coordinates === undefined) throw new Error('Se esperaba geometría para el leg.');
+
+    // Sin `via`, dos puntos: `bezierSpline` da la recta (§2.6), latitud siempre 0.
+    for (const position of coordinates) {
+      const [, y] = xy(position);
+      expect(y).toBeCloseTo(0, 10);
+    }
+  });
+
+  it('falla si el arco cruza el antimeridiano, sin caer a ningún fallback silencioso', () => {
+    const trip = loadTrip({
+      chapters: [
+        { id: 'unico', title: 'Único', dateStart: '2023-01-01', dateEnd: '2023-01-31', color: '#c2410c' },
+      ],
+      stops: [
+        { id: 'a', name: 'A', country: 'FJ', coords: [179, 0], dateStart: '2023-01-01', chapterId: 'unico', title: 'A', body: '' },
+        { id: 'b', name: 'B', country: 'FJ', coords: [-179, 0], dateStart: '2023-01-10', chapterId: 'unico', title: 'B', body: '' },
+      ],
+      legs: [{ fromStopId: 'a', toStopId: 'b', mode: 'plane' }],
+    });
+
+    expect(() => legGeometries(trip)).toThrow(/antimeridiano/);
+  });
+});
+
+describe('legGeometries — tabla de rutas por carretera (§9)', () => {
+  it('usa la geometría inyectada cuando existe para el leg', () => {
+    const roadRoutes: RoadRouteTable = {
+      'a→b': [
+        [0, 0],
+        [5, 3],
+        [10, 0],
+      ],
+    };
+
+    const [coordinates] = legGeometries(makeSingleLegTrip('car'), roadRoutes);
+    if (coordinates === undefined) throw new Error('Se esperaba geometría para el leg.');
+
+    expect(coordinates).toContainEqual([5, 3]);
+  });
+
+  it('corrige a la coordenada exacta de la parada aunque la tabla traiga un extremo "sucio"', () => {
+    const roadRoutes: RoadRouteTable = {
+      // Un motor de rutas engancha el punto pedido a la carretera más cercana,
+      // no siempre a la coordenada exacta.
+      'a→b': [
+        [0.0004, -0.0002],
+        [5, 3],
+        [10.0003, 0.0001],
+      ],
+    };
+
+    const [coordinates] = legGeometries(makeSingleLegTrip('car'), roadRoutes);
+    if (coordinates === undefined) throw new Error('Se esperaba geometría para el leg.');
+
+    expect(coordinates.at(0)).toEqual([0, 0]);
+    expect(coordinates.at(-1)).toEqual([10, 0]);
+  });
+
+  it('sin entrada en la tabla cae al spline decorativo de siempre', () => {
+    const conEntradaAjena: RoadRouteTable = { 'x→y': [[0, 0], [1, 1]] };
+
+    const [coordinates] = legGeometries(makeSingleLegTrip('car'), conEntradaAjena);
+    const [esperado] = legGeometries(makeSingleLegTrip('car'), {});
+
+    expect(coordinates).toEqual(esperado);
+  });
+
+  it('un leg en avión ignora una entrada de carretera para el mismo par de paradas', () => {
+    const roadRoutes: RoadRouteTable = {
+      // Muy lejos de la línea recta: fácil de detectar si "ganara" sobre el arco.
+      'a→b': [
+        [0, 0],
+        [5, -8],
+        [10, 0],
+      ],
+    };
+
+    const [coordinates] = legGeometries(makeSingleLegTrip('plane'), roadRoutes);
+    if (coordinates === undefined) throw new Error('Se esperaba geometría para el leg.');
+
+    expect(coordinates).not.toContainEqual([5, -8]);
+    expect(coordinates.length).toBeGreaterThan(3);
   });
 });
 

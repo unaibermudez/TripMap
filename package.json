@@ -10,12 +10,14 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "typecheck": "astro check && tsc --noEmit"
+    "typecheck": "astro check && tsc --noEmit",
+    "roads": "node --experimental-strip-types scripts/generate-road-routes.ts"
   },
   "dependencies": {
     "@astrojs/react": "^6.0.2",
     "@turf/bbox": "^7.4.0",
     "@turf/bezier-spline": "^7.4.0",
+    "@turf/great-circle": "^7.4.0",
     "@turf/helpers": "^7.4.0",
     "astro": "^7.1.6",
     "maplibre-gl": "^6.1.0",

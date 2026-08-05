@@ -1,21 +1,85 @@
 import bbox from '@turf/bbox';
 import bezierSpline from '@turf/bezier-spline';
+import greatCircle from '@turf/great-circle';
 import { lineString } from '@turf/helpers';
 import type { BBox, Feature, LineString, MultiPoint, Position } from 'geojson';
-import type { Trip } from '@/lib/schema';
+import rawRoadRoutes from '@/data/generated/road-routes.json';
+import type { Leg, Stop, TravelMode, Trip } from '@/lib/schema';
+
+/** Geometría real de carretera por leg, generada con `npm run roads` (§9). */
+export type RoadRouteTable = Record<string, Position[]>;
+
+const roadRoutesData = rawRoadRoutes as RoadRouteTable;
+
+/** Puntos del arco de gran círculo; ni muy poligonal ni carga de más el mapa. */
+const ARC_POINTS = 64;
 
 /**
- * Geometría suavizada de cada leg, en el mismo orden que `trip.legs`.
+ * Modos que no siguen carreteras: se dibujan como arco de gran círculo en vez
+ * de con la geometría real o el spline decorativo (§2.9).
+ */
+const ARC_MODES: ReadonlySet<TravelMode> = new Set(['plane', 'train', 'boat']);
+
+function arcCoordinates(leg: Leg, from: Position, to: Position): Position[] {
+  const arc = greatCircle(from, to, { npoints: ARC_POINTS });
+  if (arc.geometry.type !== 'LineString') {
+    throw new Error(
+      `El leg "${leg.fromStopId}" → "${leg.toStopId}" cruza el antimeridiano: ` +
+        'el arco de gran círculo da un MultiLineString y no se puede usar tal cual.',
+    );
+  }
+  return arc.geometry.coordinates;
+}
+
+function legCoordinates(
+  leg: Leg,
+  from: Stop,
+  to: Stop,
+  roadRoutes: RoadRouteTable,
+): Position[] {
+  if (ARC_MODES.has(leg.mode)) return arcCoordinates(leg, from.coords, to.coords);
+
+  const roadRoute = roadRoutes[`${leg.fromStopId}→${leg.toStopId}`];
+  if (roadRoute !== undefined) return roadRoute;
+
+  const line = lineString([from.coords, ...leg.via, to.coords]);
+  return bezierSpline(line).geometry.coordinates;
+}
+
+/**
+ * Fuerza los extremos exactos de la parada. Ni el arco ni, sobre todo, una
+ * ruta real de un motor de rutas (que "engancha" el punto pedido a la
+ * carretera más cercana) garantizan caer justo en la coordenada de la parada.
+ */
+function snapEndpoints(coordinates: readonly Position[], from: Position, to: Position): Position[] {
+  if (coordinates.length < 2) return [from, to];
+  return [from, ...coordinates.slice(1, -1), to];
+}
+
+/**
+ * Geometría de cada leg, en el mismo orden que `trip.legs`. Tres fuentes, en
+ * orden de prioridad (§2.9, §9):
  *
- * El spline se calcula por leg y nunca sobre la polilínea global (§2.6): así
- * cada parada cae exactamente sobre la línea y la ruta parcial es la
- * concatenación de los primeros N legs. Un leg sin `via` son dos puntos y
- * `bezierSpline` devuelve la recta.
+ * 1. Arco de gran círculo si el `mode` no sigue carreteras (avión, tren, barco).
+ * 2. Geometría real de carretera, si `npm run roads` ya la generó para ese leg.
+ * 3. El spline decorativo de siempre (`[from, ...via, to]` → `bezierSpline`),
+ *    como hoy: cada parada cae exactamente sobre la línea y la ruta parcial es
+ *    la concatenación de los primeros N legs. Un leg sin `via` son dos puntos y
+ *    `bezierSpline` devuelve la recta.
+ *
+ * Sea cual sea la fuente, `snapEndpoints` fuerza que empiece y acabe justo en
+ * las coordenadas de la parada.
+ *
+ * `roadRoutes` tiene un valor por defecto (los datos reales) para poder
+ * inyectar una tabla de prueba en los tests sin tocar el fichero generado.
  *
  * Es lo caro de todo esto, así que se calcula una vez por viaje: `routeLine`,
  * `partialRouteLine` y `chapterBounds` parten de lo que devuelve.
  */
-export function legGeometries(trip: Trip): Position[][] {
+export function legGeometries(
+  trip: Trip,
+  roadRoutes: RoadRouteTable = roadRoutesData,
+): Position[][] {
   return trip.legs.map((leg, index) => {
     const from = trip.stops[index];
     const to = trip.stops[index + 1];
@@ -26,8 +90,8 @@ export function legGeometries(trip: Trip): Position[][] {
       );
     }
 
-    const line = lineString([from.coords, ...leg.via, to.coords]);
-    return bezierSpline(line).geometry.coordinates;
+    const coordinates = legCoordinates(leg, from, to, roadRoutes);
+    return snapEndpoints(coordinates, from.coords, to.coords);
   });
 }
 

@@ -31,6 +31,7 @@ salvo petición expresa.**
 | `npm run test:watch` | Vitest en watch |
 | `npm run test:e2e` | Playwright: layout en escritorio y móvil. Reconstruye y sirve en el 4322; deja las capturas en `e2e/screenshots` |
 | `npm run typecheck` | `astro check` + `tsc --noEmit` |
+| `npm run roads` | Genera `src/data/generated/road-routes.json`: pide a OSRM la ruta real de los legs en coche/bus que aún no la tengan |
 
 ## Decisiones cerradas
 
@@ -54,6 +55,11 @@ No las cuestiones ni las cambies.
   nunca sobre la polilínea global. Así cada parada cae exactamente sobre la
   línea y la ruta parcial es la concatenación de los primeros N legs. Ojo al
   caso de 2 puntos sin `via`, que devuelve una recta.
+- **El `mode` del leg decide la geometría** (§2.9 de la spec): avión/tren/barco
+  se dibujan como arco de gran círculo; coche/bus siguen carretera real si
+  `npm run roads` ya la generó; el resto cae al spline de arriba. Sea cual sea
+  la fuente, el primer y último punto se fuerzan siempre a la coordenada
+  exacta de la parada (`snapEndpoints` en `src/lib/route.ts`).
 - **Marcadores como GeoJSON source** con circle o symbol layers. **Nunca**
   `maplibregl.Marker` de DOM: con más de 100 puntos rinde mal.
 - **El orden de las paradas es su posición en el fichero de datos**, no su

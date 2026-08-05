@@ -41,13 +41,13 @@ se deja anotado aquí como backlog, no como plan aprobado.
 
 - **Backend propio.** Hace falta en cuanto hay usuarios y viajes que
   persistir: base de datos de usuarios/viajes, y una capa de API delante.
-- **Cálculo de rutas en servidor.** Ojo a no mezclar dos cosas distintas:
-  la ruta real por carretera (para sugerir orden de paradas, distancia,
-  tiempo estimado — necesitaría un motor de rutas tipo OSRM, GraphHopper u
-  OpenRouteService) frente al spline decorativo actual
-  (`turf.bezierSpline`), que es una curva estética y no sigue carreteras.
-  El spline seguiría teniendo sentido como capa visual encima de la
-  geometría real, no tiene por qué desaparecer.
+- **Sugerir orden de paradas, distancia y tiempo estimado.** La ruta real por
+  carretera para *dibujar* el mapa ya no necesita esto (resuelto con
+  `npm run roads`, sin backend — ver `docs/SPEC.md` §9). Lo que sigue
+  pendiente y sí necesitaría servidor es una capa de sugerencia activa: dado
+  un conjunto de paradas, proponer en qué orden visitarlas o cuánto se tarda
+  entre ellas. Eso es un problema de optimización de rutas, no solo de
+  geometría, y no tiene sentido resolverlo en el navegador de cada visitante.
 - **Almacenamiento de imágenes.** Object storage (S3 o similar) en vez de
   guardar binarios en la base de datos. Si el backend es Supabase, su
   storage integrado cubre esto sin añadir AWS como proveedor aparte.
