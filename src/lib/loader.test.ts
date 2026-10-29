@@ -246,10 +246,10 @@ describe('loadTrip', () => {
 });
 
 describe('fixture de src/data', () => {
-  it('carga y tiene 8 paradas en 2 capítulos', () => {
-    expect(fixture.stops).toHaveLength(8);
+  it('carga y tiene 9 paradas en 2 capítulos', () => {
+    expect(fixture.stops).toHaveLength(9);
     expect(fixture.chapters).toHaveLength(2);
-    expect(fixture.legs).toHaveLength(7);
+    expect(fixture.legs).toHaveLength(8);
   });
 
   it('tiene al menos una foto en cada parada', () => {

@@ -9,7 +9,7 @@ export function Markdown({ body }: { body: string }) {
   const paragraphs = useMemo(() => parseMarkdown(body), [body]);
 
   return (
-    <div className="space-y-3 text-sm leading-relaxed text-neutral-700">
+    <div className="space-y-3 text-[15px] leading-relaxed text-neutral-700">
       {paragraphs.map((spans, index) => (
         <p key={index}>{spans.map(renderSpan)}</p>
       ))}

@@ -1,8 +1,14 @@
 # TripMap — Especificación
 
-Sitio web que narra un viaje de varios años por África. Documento de
-referencia para futuras sesiones: recoge el contexto y todas las decisiones
-tomadas.
+Sitio web para narrar un viaje como una secuencia de paradas sobre un mapa.
+Documento de referencia para futuras sesiones: recoge el contexto y todas las
+decisiones tomadas.
+
+> El encargo original era un viaje concreto de varios años por África. El
+> proyecto se reenfocó a viajes en general, pero **la escala de aquel encargo se
+> mantiene como objetivo de diseño**, porque es la que justifica buena parte de
+> las decisiones de este documento (§2.5, §3.5 y §9). No es una
+> descripción del contenido que hay hoy en el repo, que es una prueba de tres días.
 
 ## 1. Producto
 
@@ -14,9 +20,10 @@ Interfaz de dos zonas:
 - **Línea de tiempo**, en la parte inferior. Permite avanzar y retroceder por
   el viaje. Está sincronizada con el mapa en ambos sentidos.
 
-Volumen previsto: más de 100 paradas agrupadas en capítulos (por país o por
-bloque narrativo), y varios cientos de fotos. El contenido lo introduce el
-autor a mano en el repositorio.
+Volumen objetivo: más de 100 paradas agrupadas en capítulos (por país o por
+bloque narrativo), y varios cientos de fotos. **Es la escala para la que se
+diseña, no la que hay cargada**: el contenido actual son 9 paradas reales de una prueba de tres días.
+Lo introduce el autor a mano en el repositorio.
 
 ## 2. Decisiones cerradas
 
@@ -225,26 +232,33 @@ Decisiones del SLICE 4.
   no como estado de React: un cambio de `isScrubbing` no debe repintar el mapa.
 - **El `flyTo` no es `essential`**, de modo que quien tenga activado
   `prefers-reduced-motion` obtiene un salto en vez de un vuelo.
+- **Encuadres del mapa (`MapControls`).** Dos botones arriba a la izquierda:
+  "Parada actual" hace `flyTo` a la parada activa con zoom 9, y "Vista general"
+  hace `fitBounds` de `tripBounds` (todas las paradas y todos los tramos). No
+  navegan, solo mueven la cámara, así que no pasan por el store: los callbacks
+  viven en `MapView`, que es quien tiene la instancia.
 - **La atribución la pone el style de Positron.** No se duplica a mano: basta
   con no desactivar el control de atribución (§2.3).
 
-### 3.5 La timeline es una sola pista, con los dos niveles alineados
+### 3.5 La timeline abre un solo capítulo y colapsa el resto
 
-Decisiones del SLICE 5.
+Decisiones del SLICE 5, revisadas después a petición del autor: la versión
+inicial repartía todos los capítulos en una pista única; con varios capítulos
+largos las paradas dejaban de caber.
 
-- **Los dos niveles comparten pista y escala.** La banda de capítulos se reparte
-  con `flex-grow` igual al número de paradas del capítulo y las marcas de parada
-  se sitúan en `(índice + 0.5) / total`. Al salir las dos medidas del mismo
-  reparto uniforme (§2.8), las paradas del capítulo activo caen exactamente
-  dentro de su banda sin sincronizar nada.
-- **Todas las paradas ocupan su franja; solo se expanden las del capítulo
-  activo.** Las demás quedan como puntos. Así se ve que la escala es por índice
-  y no por tiempo, y el ancho de la pista no depende de qué capítulo esté
-  abierto.
-- **El arrastre cubre la pista entera, no solo el capítulo activo.** Al pasar el
-  cursor a otro capítulo, ese capítulo se expande solo, porque el capítulo
-  activo se deriva de la parada activa (§3). No hay un estado de "capítulo
-  abierto" aparte.
+- **El capítulo activo se abre; los demás se colapsan a los lados.** Cada
+  capítulo anterior o posterior es un botón estrecho con su título, sus fechas y
+  un punto por parada (de su color si ya se ha recorrido, gris si no). El capítulo
+  abierto se queda con el ancho sobrante, con cabecera y todas sus paradas
+  etiquetadas. Los colapsados se encogen antes que el abierto.
+- **La escala sigue siendo uniforme por índice (§2.8), dentro del capítulo
+  abierto.** Cada parada mide lo mismo; las marcas se sitúan en
+  `(índice local + 0.5) / paradas del capítulo`.
+- **El arrastre cubre solo el capítulo abierto.** Para cambiar de capítulo están
+  los capítulos colapsados, las flechas del teclado y los botones del panel;
+  entonces el capítulo abierto cambia solo, porque se deriva de la parada activa
+  (§3). No hay un estado de "capítulo abierto" aparte. El cursor y el
+  `aria-valuemin`/`aria-valuemax` del `slider` se expresan en índices globales.
 - **Un click es un arrastre de longitud cero.** El mismo `pointerdown` hace
   `startScrub` y el salto, y el `pointerup` hace `endScrub`; la capa de URL ya
   convierte eso en una única entrada de historial (§3.3). No hace falta un

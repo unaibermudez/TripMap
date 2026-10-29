@@ -1,7 +1,14 @@
 # TripMap
 
-Sitio estático que narra un viaje de varios años por África: mapa interactivo
-con la ruta y las paradas, más una línea de tiempo sincronizada.
+Sitio estático para visualizar viajes: mapa interactivo con la ruta y las
+paradas, más una línea de tiempo sincronizada. Sirve para cualquier viaje que
+se pueda contar como una secuencia de paradas, desde una vuelta a un país hasta
+un recorrido de varios años.
+
+**El contenido de `src/data` es una prueba con datos reales**: los tres primeros
+días (29 abr a 1 may de 2026) de un viaje a Islandia, con 9 paradas y fotos
+propias. El resto del viaje se irá añadiendo; mientras tanto no hay que tomarlo
+como el contenido definitivo.
 
 La especificación completa está en [docs/SPEC.md](docs/SPEC.md). Léela antes de
 tocar nada. Aquí está solo lo que hace falta para trabajar en el día a día.

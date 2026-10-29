@@ -159,3 +159,14 @@ export function chapterBounds(
   const points: MultiPoint = { type: 'MultiPoint', coordinates };
   return bbox(points);
 }
+
+/**
+ * Bounding box de todo el viaje: todas las paradas y todos los tramos de ruta,
+ * que con un `via` pueden salirse del rectángulo de las paradas. Es el encuadre
+ * del botón de vista general del mapa.
+ */
+export function tripBounds(trip: Trip, geometries: readonly Position[][]): BBox {
+  const coordinates: Position[] = [...trip.stops.map((stop) => stop.coords), ...geometries.flat()];
+  const points: MultiPoint = { type: 'MultiPoint', coordinates };
+  return bbox(points);
+}

@@ -9,9 +9,13 @@ import { tripStore, useTripStore } from '@/lib/tripStore';
 const CONTENT_ID = 'stop-panel-content';
 
 const NAV_BUTTON =
-  'rounded border border-neutral-300 px-2.5 py-1 text-xs font-medium text-neutral-700 ' +
+  'rounded border border-neutral-300 px-3 py-1.5 text-sm font-medium text-neutral-700 ' +
   'transition-colors hover:bg-neutral-100 disabled:cursor-default disabled:opacity-40 ' +
   'disabled:hover:bg-transparent';
+
+const STEP_BUTTON =
+  'flex min-w-0 flex-1 cursor-pointer flex-col rounded-lg px-4 py-2.5 transition ' +
+  'disabled:cursor-default disabled:opacity-40';
 
 /**
  * La parada activa: título, fechas, cuerpo y fotos. Panel lateral en escritorio
@@ -26,24 +30,26 @@ export function StopPanel() {
   const isPanelOpen = useTripStore((state) => state.isPanelOpen);
 
   const arrival = arrivalLeg(trip, currentStopIndex);
+  const prevStop = trip.stops[currentStopIndex - 1];
+  const nextStop = trip.stops[currentStopIndex + 1];
 
   return (
     <aside
       aria-label="Detalle de la parada"
-      className="flex max-h-[60%] shrink-0 flex-col border-t border-neutral-200 bg-white md:h-full md:max-h-none md:w-96 md:border-t-0 md:border-l"
+      className="flex max-h-[60%] shrink-0 flex-col border-t border-neutral-200 bg-white md:h-full md:max-h-none md:w-[26rem] md:border-t-0 md:border-l lg:w-[30rem]"
     >
-      <header className="flex items-start gap-3 px-4 pt-3 pb-2">
+      <header className="flex items-start gap-3 px-5 pt-4 pb-3">
         <div className="min-w-0 flex-1">
           <p
-            className="truncate text-[11px] font-semibold tracking-wide uppercase"
+            className="truncate text-xs font-semibold tracking-wide uppercase"
             style={{ color: chapter.color }}
           >
-            {chapter.title}
+            {chapter.title} · Parada {currentStopIndex + 1} de {trip.stops.length}
           </p>
-          <h2 className="mt-0.5 text-lg leading-tight font-semibold text-neutral-900">
+          <h2 className="mt-1 text-xl leading-tight font-semibold text-neutral-900">
             {stop.title}
           </h2>
-          <p className="mt-1 text-xs text-neutral-500">
+          <p className="mt-1.5 text-sm text-neutral-500">
             {stop.name} · {formatDateRange(stop.dateStart, stop.dateEnd)}
           </p>
         </div>
@@ -62,35 +68,39 @@ export function StopPanel() {
 
       <div
         id={CONTENT_ID}
-        className={`min-h-0 flex-1 overflow-y-auto px-4 pb-4 md:block ${isPanelOpen ? '' : 'hidden'}`}
+        className={`min-h-0 flex-1 overflow-y-auto px-5 pb-5 md:block ${isPanelOpen ? '' : 'hidden'}`}
       >
         {arrival !== null && (
-          <p className="mb-3 text-xs text-neutral-400">Llegada {travelModeLabel(arrival.mode)}</p>
+          <p className="mb-3 text-sm text-neutral-400">Llegada {travelModeLabel(arrival.mode)}</p>
         )}
 
         <Markdown body={stop.body} />
         <PhotoGallery photos={stop.photos} stopName={stop.name} />
       </div>
 
-      <footer className="flex shrink-0 items-center justify-between gap-2 border-t border-neutral-200 px-4 py-2">
+      <footer className="flex shrink-0 gap-3 border-t border-neutral-200 bg-neutral-50 px-5 py-3">
         <button
           type="button"
           onClick={() => tripStore.getState().prev()}
-          disabled={currentStopIndex === 0}
-          className={NAV_BUTTON}
+          disabled={prevStop === undefined}
+          className={`${STEP_BUTTON} items-start border border-neutral-300 bg-white text-neutral-800 hover:bg-neutral-100 disabled:hover:bg-white`}
         >
-          ← Anterior
+          <span className="text-xs font-medium text-neutral-500">← Anterior</span>
+          <span className="max-w-full truncate text-sm font-semibold">
+            {prevStop?.name ?? 'Inicio del viaje'}
+          </span>
         </button>
-        <span className="text-xs tabular-nums text-neutral-500">
-          {currentStopIndex + 1} / {trip.stops.length}
-        </span>
         <button
           type="button"
           onClick={() => tripStore.getState().next()}
-          disabled={currentStopIndex === trip.stops.length - 1}
-          className={NAV_BUTTON}
+          disabled={nextStop === undefined}
+          style={{ backgroundColor: chapter.color }}
+          className={`${STEP_BUTTON} items-end text-white shadow-sm hover:brightness-110 disabled:hover:brightness-100`}
         >
-          Siguiente →
+          <span className="text-xs font-medium text-white/80">Siguiente →</span>
+          <span className="max-w-full truncate text-sm font-semibold">
+            {nextStop?.name ?? 'Fin del viaje'}
+          </span>
         </button>
       </footer>
     </aside>

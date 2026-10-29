@@ -1,5 +1,10 @@
 import type { FeatureCollection, LineString, Point, Position } from 'geojson';
-import { MapLibreMap, setWorkerUrl, type GeoJSONSource, type MapLayerMouseEvent } from 'maplibre-gl';
+import {
+  MapLibreMap,
+  setWorkerUrl,
+  type GeoJSONSource,
+  type MapLayerMouseEvent,
+} from 'maplibre-gl';
 // MapLibre busca su worker con `new URL('./maplibre-gl-worker.mjs',
 // import.meta.url)`. Una vez empaquetado, esa URL apunta al directorio del
 // bundle, donde el fichero no está: sin worker no se procesa ningún tile y el
@@ -8,12 +13,17 @@ import { MapLibreMap, setWorkerUrl, type GeoJSONSource, type MapLayerMouseEvent 
 import workerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { BasemapSwitcher } from '@/components/BasemapSwitcher';
+import { MapControls } from '@/components/MapControls';
 import { basemapById } from '@/lib/basemap';
 import { lineCollection, stopIndexOf, stopsCollection, type StopProperties } from '@/lib/mapData';
-import { legGeometries, partialRouteLine, routeLine } from '@/lib/route';
+import { legGeometries, partialRouteLine, routeLine, tripBounds } from '@/lib/route';
 import { tripStore, useTripStore } from '@/lib/tripStore';
 
 const FLY_DURATION_MS = 1500;
+
+/** Zoom al volver a la parada activa desde el plano general. */
+const FOCUS_ZOOM = 9;
+const OVERVIEW_PADDING = 48;
 
 const SOURCE_ROUTE = 'trip-route';
 const SOURCE_TRAVELLED = 'trip-route-travelled';
@@ -197,9 +207,28 @@ export function MapView() {
     map.flyTo({ center: stop.coords, duration: FLY_DURATION_MS });
   }, [isStyleReady, currentStopIndex, geometries, trip]);
 
+  const focusCurrentStop = () => {
+    const map = mapRef.current;
+    const stop = trip.stops[currentStopIndex];
+    if (map === null || stop === undefined) return;
+    map.flyTo({ center: stop.coords, zoom: FOCUS_ZOOM, duration: FLY_DURATION_MS });
+  };
+
+  const showOverview = () => {
+    const [west, south, east, north] = tripBounds(trip, geometries);
+    mapRef.current?.fitBounds(
+      [
+        [west, south],
+        [east, north],
+      ],
+      { padding: OVERVIEW_PADDING, duration: FLY_DURATION_MS },
+    );
+  };
+
   return (
     <div className="relative h-full w-full">
       <div ref={containerRef} className="h-full w-full" />
+      <MapControls onFocusStop={focusCurrentStop} onShowOverview={showOverview} />
       <BasemapSwitcher />
     </div>
   );

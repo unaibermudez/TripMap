@@ -2,7 +2,14 @@ import type { Feature, LineString, Position } from 'geojson';
 import { describe, expect, it } from 'vitest';
 import { trip as fixture } from '@/data';
 import { loadTrip } from '@/lib/loader';
-import { chapterBounds, legGeometries, partialRouteLine, routeLine, type RoadRouteTable } from '@/lib/route';
+import {
+  chapterBounds,
+  legGeometries,
+  partialRouteLine,
+  routeLine,
+  tripBounds,
+  type RoadRouteTable,
+} from '@/lib/route';
 import type { Coords, Trip } from '@/lib/schema';
 
 /** Dos paradas y un único leg, para aislar el comportamiento por `mode`. */
@@ -349,12 +356,37 @@ describe('chapterBounds', () => {
   });
 
   it('con los datos reales no se estira hasta el capítulo siguiente', () => {
-    const [, , , maxY] = chapterBounds(fixture, legGeometries(fixture), 'costa-sur');
-    const firstOfNext = stopAt(fixture, 4);
+    const [, minY] = chapterBounds(fixture, legGeometries(fixture), 'circulo-dorado');
+    const firstOfNext = stopAt(fixture, 6);
 
-    // "costa-sur" no pasa de Höfn; "circulo-norte" arranca en Egilsstaðir, más
-    // al norte que cualquier parada o tramo interior de "costa-sur".
-    expect(firstOfNext.id).toBe('egilsstadir');
-    expect(firstOfNext.coords[1]).toBeGreaterThan(maxY);
+    // "circulo-dorado" no baja de Keflavík; "costa-sur" arranca en
+    // Seljalandsfoss, más al sur que cualquier parada o tramo interior de él.
+    expect(firstOfNext.id).toBe('seljalandsfoss');
+    expect(firstOfNext.coords[1]).toBeLessThan(minY);
+  });
+});
+
+describe('tripBounds', () => {
+  it('encierra todas las paradas y los tramos que se salen de ellas', () => {
+    const trip = makeTrip();
+    const [minX, minY, maxX, maxY] = tripBounds(trip, legGeometries(trip));
+
+    // Las paradas llegan a [20, 10], pero el via del leg c→d sube hasta
+    // [15, 20].
+    expect(minX).toBeCloseTo(0, 10);
+    expect(minY).toBeCloseTo(0, 10);
+    expect(maxX).toBeGreaterThanOrEqual(20);
+    expect(maxY).toBeGreaterThan(19);
+  });
+
+  it('con los datos reales encierra todas las paradas', () => {
+    const [minX, minY, maxX, maxY] = tripBounds(fixture, legGeometries(fixture));
+
+    for (const stop of fixture.stops) {
+      expect(stop.coords[0]).toBeGreaterThanOrEqual(minX);
+      expect(stop.coords[0]).toBeLessThanOrEqual(maxX);
+      expect(stop.coords[1]).toBeGreaterThanOrEqual(minY);
+      expect(stop.coords[1]).toBeLessThanOrEqual(maxY);
+    }
   });
 });

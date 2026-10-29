@@ -108,15 +108,15 @@ test.describe('layout del viaje', () => {
     const slider = timeline.getByRole('slider', { name: 'Parada actual' });
 
     // El capítulo activo expande sus paradas con nombre y fecha (§3.5).
-    await expect(timeline.getByText('Reikiavik')).toBeVisible();
-    await expect(timeline.getByText('Höfn')).toBeVisible();
+    await expect(timeline.getByText('Aeropuerto de Keflavík')).toBeVisible();
+    await expect(timeline.getByText('Camping de Úthlíð')).toBeVisible();
     await expect(slider).toHaveAttribute('aria-valuenow', '0');
 
     // Cruzar al segundo capítulo: se expande solo, sin estado aparte (§3.5).
-    await page.getByRole('button', { name: 'Siguiente →' }).click({ clickCount: 4 });
-    await expect(slider).toHaveAttribute('aria-valuenow', '4');
-    await expect(page).toHaveURL(/\?stop=egilsstadir$/);
-    await expect(timeline.getByText('Borgarnes')).toBeVisible();
+    await page.getByRole('button', { name: /Siguiente/ }).click({ clickCount: 6 });
+    await expect(slider).toHaveAttribute('aria-valuenow', '6');
+    await expect(page).toHaveURL(/\?stop=seljalandsfoss$/);
+    await expect(timeline.getByText('Glaciar Sólheimajökull')).toBeVisible();
 
     await page.waitForTimeout(FLY_SETTLE_MS);
     await expectNothingOverflows(page);
@@ -164,8 +164,8 @@ test.describe('tipo de mapa', () => {
 
     // Navegar después del cambio toca el filtro de la parada activa y la source
     // de la ruta recorrida: si no se hubieran vuelto a añadir, reventaría aquí.
-    await page.getByRole('button', { name: 'Siguiente →' }).click();
-    await expect(page).toHaveURL(/\?stop=vik$/);
+    await page.getByRole('button', { name: /Siguiente/ }).click();
+    await expect(page).toHaveURL(/\?stop=hveragerdi$/);
     await page.waitForTimeout(FLY_SETTLE_MS);
 
     await expectNothingOverflows(page);
@@ -176,8 +176,8 @@ test.describe('tipo de mapa', () => {
       timeout: 30_000,
     });
 
-    await page.getByRole('button', { name: 'Siguiente →' }).click();
-    await expect(page).toHaveURL(/\?stop=jokulsarlon$/);
+    await page.getByRole('button', { name: /Siguiente/ }).click();
+    await expect(page).toHaveURL(/\?stop=kerid$/);
 
     expect(errores, `errores en la página: ${errores.join(' | ')}`).toEqual([]);
   });
@@ -194,14 +194,14 @@ test.describe('hoja inferior en móvil', () => {
 
     // La cabecera y los botones se ven siempre; el cuerpo empieza plegado (§3.6).
     await expect(
-      panel.getByRole('heading', { name: 'Empieza la vuelta a la isla' }),
+      panel.getByRole('heading', { name: 'Aterrizamos y recogemos el coche' }),
     ).toBeVisible();
-    await expect(panel.getByRole('button', { name: 'Siguiente →' })).toBeVisible();
+    await expect(panel.getByRole('button', { name: /Siguiente/ })).toBeVisible();
     await expect(cuerpo).toBeHidden();
 
     await panel.getByRole('button', { name: 'Ver más' }).click();
     await expect(cuerpo).toBeVisible();
-    await expect(cuerpo.getByRole('img', { name: /tejados de colores/i })).toBeVisible();
+    await expect(cuerpo.getByRole('img', { name: /Jeep con tienda de techo/i })).toBeVisible();
 
     await expectNothingOverflows(page);
     await shoot(page, testInfo, '03-hoja-abierta');
