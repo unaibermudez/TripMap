@@ -22,7 +22,7 @@ Interfaz de dos zonas:
 
 Volumen objetivo: más de 100 paradas agrupadas en capítulos (por país o por
 bloque narrativo), y varios cientos de fotos. **Es la escala para la que se
-diseña, no la que hay cargada**: el contenido actual son 9 paradas reales de una prueba de tres días.
+diseña, no la que hay cargada**: el contenido actual son 30 paradas reales de un viaje de once días a Islandia.
 Lo introduce el autor a mano en el repositorio.
 
 ## 2. Decisiones cerradas

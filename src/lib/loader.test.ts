@@ -246,14 +246,16 @@ describe('loadTrip', () => {
 });
 
 describe('fixture de src/data', () => {
-  it('carga y tiene 9 paradas en 2 capítulos', () => {
-    expect(fixture.stops).toHaveLength(9);
-    expect(fixture.chapters).toHaveLength(2);
-    expect(fixture.legs).toHaveLength(8);
+  it('carga y tiene 30 paradas en 6 capítulos', () => {
+    expect(fixture.stops).toHaveLength(30);
+    expect(fixture.chapters).toHaveLength(6);
+    expect(fixture.legs).toHaveLength(29);
   });
 
-  it('tiene al menos una foto en cada parada', () => {
+  it('tiene fotos en cada parada, salvo en las de solo dormir o volver', () => {
+    const sinFotos = new Set(['vik-camping', 'borgarnes', 'keflavik-regreso']);
     for (const stop of fixture.stops) {
+      if (sinFotos.has(stop.id)) continue;
       expect(stop.photos.length, `la parada "${stop.id}" no tiene fotos`).toBeGreaterThan(0);
     }
   });
