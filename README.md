@@ -6,9 +6,9 @@ que se pueda contar como una secuencia de paradas, desde una vuelta a un país
 hasta un recorrido de varios años. Todo el contenido vive en el repositorio y
 se resuelve en tiempo de build; no hay backend, ni base de datos, ni usuarios.
 
-🌍 **https://unaibermudez.github.io/TripMap/**
+🌍 **https://unaibermudez.github.io/TripMap/** · versión **1.0.0**
 
-![El mapa sobre satélite con la ruta siguiendo la carretera de circunvalación de Islandia, el panel de la parada y la línea de tiempo](docs/captura.png)
+![El mapa sobre satélite con la ruta completa del viaje a Islandia, el panel de la parada y la línea de tiempo](docs/captura.png)
 
 ## Qué hace
 

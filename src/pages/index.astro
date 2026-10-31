@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import { App } from '@/components/App';
+import { withBase } from '@/lib/assets';
 ---
 
 <!doctype html>
@@ -9,6 +10,9 @@ import { App } from '@/components/App';
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>TripMap</title>
+    <link rel="icon" href={withBase('/favicon.svg')} type="image/svg+xml" />
+    <link rel="icon" href={withBase('/favicon-32.png')} type="image/png" sizes="32x32" />
+    <link rel="apple-touch-icon" href={withBase('/apple-touch-icon.png')} />
   </head>
   <body class="h-dvh w-dvw overflow-hidden bg-neutral-100 text-neutral-900">
     <App client:load />
