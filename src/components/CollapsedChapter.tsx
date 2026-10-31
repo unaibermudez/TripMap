@@ -22,7 +22,7 @@ export function CollapsedChapter({ segment, side }: CollapsedChapterProps) {
       title={chapter.title}
       aria-label={`Ir a ${chapter.title}`}
       onClick={() => tripStore.getState().goToChapter(chapter.id)}
-      className={`flex w-24 min-w-10 shrink cursor-pointer flex-col border-neutral-200 text-left transition-colors hover:bg-neutral-100 md:w-40 ${
+      className={`hidden w-24 min-w-10 shrink cursor-pointer flex-col border-neutral-200 text-left transition-colors hover:bg-neutral-100 md:flex md:w-40 ${
         side === 'past' ? 'border-r' : 'border-l'
       }`}
     >

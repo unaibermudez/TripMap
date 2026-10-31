@@ -47,17 +47,17 @@ export function StopTicks({ stops, startIndex, currentStopIndex, chapter }: Stop
             onClick={() => tripStore.getState().goToStop(startIndex + index)}
           >
             <span
-              className={`flex h-8 w-full items-end justify-center px-1 pb-1 text-center text-xs leading-tight ${
+              className={`flex h-7 w-full items-end justify-center px-1 pb-1 text-center text-[11px] md:h-8 md:text-xs leading-tight ${
                 current ? 'font-semibold text-neutral-900' : 'text-neutral-600'
               }`}
             >
               <span className="line-clamp-2">{stop.name}</span>
             </span>
             <span
-              className="size-5 shrink-0 rounded-full ring-2 ring-white"
+              className="size-4 shrink-0 rounded-full ring-2 ring-white md:size-5"
               style={{ backgroundColor: chapter.color }}
             />
-            <span className="flex h-8 w-full items-start justify-center truncate px-1 pt-1 text-center text-[11px] leading-tight text-neutral-400">
+            <span className="flex h-5 w-full items-start justify-center truncate px-1 pt-0.5 text-center text-[11px] md:h-8 md:pt-1 leading-tight text-neutral-400">
               {formatShortDay(stop.dateStart)}
             </span>
           </div>

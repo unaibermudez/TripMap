@@ -14,7 +14,7 @@ const NAV_BUTTON =
   'disabled:hover:bg-transparent';
 
 const STEP_BUTTON =
-  'flex min-w-0 flex-1 cursor-pointer flex-col rounded-lg px-4 py-2.5 transition ' +
+  'flex min-w-0 flex-1 cursor-pointer flex-col rounded-lg px-4 py-1.5 transition md:py-2.5 ' +
   'disabled:cursor-default disabled:opacity-40';
 
 /**
@@ -38,7 +38,7 @@ export function StopPanel() {
       aria-label="Detalle de la parada"
       className="flex max-h-[60%] shrink-0 flex-col border-t border-neutral-200 bg-white md:h-full md:max-h-none md:w-[26rem] md:border-t-0 md:border-l lg:w-[30rem]"
     >
-      <header className="flex items-start gap-3 px-5 pt-4 pb-3">
+      <header className="flex items-start gap-3 px-5 pt-3 pb-2 md:pt-4 md:pb-3">
         <div className="min-w-0 flex-1">
           <p
             className="truncate text-xs font-semibold tracking-wide uppercase"
@@ -46,7 +46,7 @@ export function StopPanel() {
           >
             {chapter.title} · Parada {currentStopIndex + 1} de {trip.stops.length}
           </p>
-          <h2 className="mt-1 text-xl leading-tight font-semibold text-neutral-900">
+          <h2 className="mt-1 text-lg leading-tight md:text-xl font-semibold text-neutral-900">
             {stop.title}
           </h2>
           <p className="mt-1.5 text-sm text-neutral-500">
@@ -78,7 +78,7 @@ export function StopPanel() {
         <PhotoGallery photos={stop.photos} stopName={stop.name} />
       </div>
 
-      <footer className="flex shrink-0 gap-3 border-t border-neutral-200 bg-neutral-50 px-5 py-3">
+      <footer className="flex shrink-0 gap-3 border-t border-neutral-200 bg-neutral-50 px-5 py-2 md:py-3">
         <button
           type="button"
           onClick={() => tripStore.getState().prev()}

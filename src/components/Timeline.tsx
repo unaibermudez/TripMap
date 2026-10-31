@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from 'react';
+import { ChapterStrip } from '@/components/ChapterStrip';
 import { ChapterTrack } from '@/components/ChapterTrack';
 import { CollapsedChapter } from '@/components/CollapsedChapter';
 import { selectCurrentChapter } from '@/lib/store';
@@ -36,19 +37,22 @@ export function Timeline() {
   return (
     <section
       aria-label="Línea de tiempo del viaje"
-      className="flex min-h-[8.75rem] shrink-0 border-t border-neutral-200 bg-white"
+      className="flex shrink-0 flex-col border-t border-neutral-200 bg-white md:min-h-[8.75rem]"
     >
-      {segments.map((segment, index) =>
-        index === activeIndex ? (
-          <ChapterTrack key={segment.chapter.id} segment={segment} />
-        ) : (
-          <CollapsedChapter
-            key={segment.chapter.id}
-            segment={segment}
-            side={index < activeIndex ? 'past' : 'future'}
-          />
-        ),
-      )}
+      <ChapterStrip segments={segments} activeIndex={activeIndex} />
+      <div className="flex min-w-0 flex-1">
+        {segments.map((segment, index) =>
+          index === activeIndex ? (
+            <ChapterTrack key={segment.chapter.id} segment={segment} />
+          ) : (
+            <CollapsedChapter
+              key={segment.chapter.id}
+              segment={segment}
+              side={index < activeIndex ? 'past' : 'future'}
+            />
+          ),
+        )}
+      </div>
     </section>
   );
 }

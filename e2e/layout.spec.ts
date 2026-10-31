@@ -55,7 +55,7 @@ async function expectNothingOverflows(page: Page): Promise<void> {
   // El `body` es `overflow-hidden`, así que un desbordamiento no se ve como
   // scroll de la página: hay que mirar caja por caja.
   const scroll = await page.evaluate(() => {
-    const track = document.querySelector('section[aria-label="Línea de tiempo del viaje"] > div');
+    const track = document.querySelector('section[aria-label="Línea de tiempo del viaje"] .overflow-x-auto');
     return {
       // La pista sí se desplaza en horizontal a propósito (§3.5); en vertical
       // no, y si lo hiciera las etiquetas de las paradas quedarían cortadas.

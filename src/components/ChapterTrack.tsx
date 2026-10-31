@@ -91,7 +91,7 @@ export function ChapterTrack({ segment }: ChapterTrackProps) {
   return (
     <div className="flex min-w-0 flex-1 flex-col">
       <div
-        className="h-11 shrink-0 border-b-2 px-2 py-1"
+        className="hidden h-11 shrink-0 border-b-2 px-2 py-1 md:block"
         // El color del capítulo con `1f` detrás es el mismo con alfa: el
         // esquema garantiza que sean seis dígitos hex (§4).
         style={{ borderColor: chapter.color, backgroundColor: `${chapter.color}1f` }}
@@ -112,7 +112,7 @@ export function ChapterTrack({ segment }: ChapterTrackProps) {
             aria-valuemax={startIndex + stopCount - 1}
             aria-valuenow={currentStopIndex}
             aria-valuetext={currentStop.name}
-            className="relative h-24 cursor-pointer touch-none select-none"
+            className="relative h-16 cursor-pointer md:h-24 touch-none select-none"
             onPointerDown={onPointerDown}
             onPointerMove={onPointerMove}
             onPointerUp={onPointerEnd}
@@ -134,7 +134,7 @@ export function ChapterTrack({ segment }: ChapterTrackProps) {
               {/* Concéntrico con la marca de la parada activa y algo mayor, de
                   modo que la tape en vez de duplicarla justo encima. */}
               <span
-                className="absolute top-1/2 left-1/2 size-6 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white shadow"
+                className="absolute top-1/2 left-1/2 size-5 -translate-x-1/2 md:size-6 -translate-y-1/2 rounded-full border-2 border-white shadow"
                 style={{ backgroundColor: chapter.color }}
               />
             </div>
